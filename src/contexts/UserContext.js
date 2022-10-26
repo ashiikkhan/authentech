@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import app from '../firebase/firebase.init';
 import {
   getAuth,
@@ -7,6 +7,8 @@ import {
   sendEmailVerification,
   signInWithPopup,
   GoogleAuthProvider,
+  onAuthStateChanged,
+  signOut,
 } from 'firebase/auth';
 
 const auth = getAuth(app);
@@ -35,7 +37,29 @@ const UserContext = ({ children }) => {
   const googleSignUp = () => {
     return signInWithPopup(auth, googleProvider);
   };
-  const authInfo = { user, createUser, updateName, emaiVerify, googleSignUp };
+  //5. onAuthChange
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  //6. logout
+  const logOut = () => {
+    return signOut(auth);
+  };
+
+  const authInfo = {
+    user,
+    createUser,
+    updateName,
+    emaiVerify,
+    googleSignUp,
+    logOut,
+  };
   return (
     <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>
   );
