@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { AuthContext } from '../contexts/UserContext';
@@ -8,6 +8,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
+  const [userEmail, setUserEmail] = useState('');
 
   //email pass sign in
   const handleSignIn = (e) => {
@@ -40,9 +41,9 @@ const Login = () => {
     });
   };
   const handleResetPassword = () => {
-    resetPassword()
+    resetPassword(userEmail)
       .then(() => {
-        // Password reset email sent
+        toast.success('Reset link has been sent to you email ');
       })
       .catch((error) => {
         const errorMessage = error.message;
@@ -69,6 +70,7 @@ const Login = () => {
                 Email address
               </label>
               <input
+                onBlur={(event) => setUserEmail(event.target.value)}
                 type='email'
                 name='email'
                 id='email'
