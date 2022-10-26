@@ -1,7 +1,62 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { AuthContext } from '../contexts/UserContext';
 
 const Register = () => {
+  const { createUser, updateName, emaiVerify, googleSignUp } =
+    useContext(AuthContext);
+
+  //handle form on submit function
+  const handleOnSubmit = (e) => {
+    e.preventDefault();
+    //get all data from form
+    const form = e.target;
+    const name = form.name.value;
+    const email = form.email.value;
+    const password = form.password.value;
+
+    //create account
+    createUser(email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        toast.success('Successfully Registered !!!');
+        //start_update_profile
+        updateName(name)
+          .then(() => {
+            //start email verification
+            emaiVerify().then(() => {
+              // Email verification sent!
+              toast.success('Check your email and verify !!!');
+            });
+            //end email verification
+          })
+          .catch((error) => {
+            // An error occurred
+          });
+        //end_update_profile
+      })
+      .catch((error) => {
+        const errorMessage = error.message;
+        toast.error(`${errorMessage.slice(9, -1)}`);
+      });
+  };
+
+  //create account with google
+  const handleGoogleSignUp = () => {
+    googleSignUp()
+      .then((result) => {
+        const user = result.user;
+        console.log(user);
+        toast.success(
+          `Hello ${user.displayName} ! You have created your account successfully.`
+        );
+      })
+      .catch((error) => {
+        const errorMessage = error.message;
+        toast.error(`${errorMessage.slice(9, -1)}`);
+      });
+  };
   return (
     <div className='flex justify-center items-center pt-8'>
       <div className='flex flex-col max-w-md p-6 rounded-md sm:p-10 bg-gray-100 text-gray-900'>
@@ -9,7 +64,9 @@ const Register = () => {
           <h1 className='my-3 text-4xl font-bold'>Register</h1>
           <p className='text-sm text-gray-400'>Create a new account</p>
         </div>
+        {/* handle on submit */}
         <form
+          onSubmit={handleOnSubmit}
           noValidate=''
           action=''
           className='space-y-12 ng-untouched ng-pristine ng-valid'>
@@ -73,7 +130,10 @@ const Register = () => {
           <div className='flex-1 h-px sm:w-16 dark:bg-gray-700'></div>
         </div>
         <div className='flex justify-center space-x-4'>
-          <button aria-label='Log in with Google' className='p-3 rounded-sm'>
+          <button
+            onClick={handleGoogleSignUp}
+            aria-label='Log in with Google'
+            className='p-3 rounded-sm'>
             <svg
               xmlns='http://www.w3.org/2000/svg'
               viewBox='0 0 32 32'
