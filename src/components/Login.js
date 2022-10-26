@@ -1,6 +1,54 @@
-import { Link } from 'react-router-dom';
+import { useContext } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { AuthContext } from '../contexts/UserContext';
 
 const Login = () => {
+  const { singIn, resetPassword, googleSignUp } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
+
+  //email pass sign in
+  const handleSignIn = (e) => {
+    e.preventDefault();
+    //get all data from form
+    const form = e.target;
+    const email = form.email.value;
+    const password = form.password.value;
+
+    //sign in with email and pass
+    singIn(email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        console.log(user);
+        toast.success('logged in successfully');
+
+        navigate(from, { replace: true });
+        // ...
+      })
+      .catch((error) => {
+        const errorMessage = error.message;
+        console.log(errorMessage);
+      });
+  };
+  //google sing in
+  const handleGoogleSignIn = () => {
+    googleSignUp().then((result) => {
+      console.log(result.user);
+    });
+  };
+  const handleResetPassword = () => {
+    resetPassword()
+      .then(() => {
+        // Password reset email sent
+      })
+      .catch((error) => {
+        const errorMessage = error.message;
+        console.log(errorMessage);
+      });
+  };
   return (
     <div className='flex justify-center items-center pt-8'>
       <div className='flex flex-col max-w-md p-6 rounded-md sm:p-10 bg-gray-100 text-gray-900'>
@@ -11,6 +59,7 @@ const Login = () => {
           </p>
         </div>
         <form
+          onSubmit={handleSignIn}
           noValidate=''
           action=''
           className='space-y-6 ng-untouched ng-pristine ng-valid'>
@@ -53,7 +102,9 @@ const Login = () => {
           </div>
         </form>
         <div className='space-y-1'>
-          <button className='text-xs hover:underline text-gray-400'>
+          <button
+            onClick={handleResetPassword}
+            className='text-xs hover:underline text-gray-400'>
             Forgot password?
           </button>
         </div>
@@ -65,7 +116,10 @@ const Login = () => {
           <div className='flex-1 h-px sm:w-16 dark:bg-gray-700'></div>
         </div>
         <div className='flex justify-center space-x-4'>
-          <button aria-label='Log in with Google' className='p-3 rounded-sm'>
+          <button
+            onClick={handleGoogleSignIn}
+            aria-label='Log in with Google'
+            className='p-3 rounded-sm'>
             <svg
               xmlns='http://www.w3.org/2000/svg'
               viewBox='0 0 32 32'
